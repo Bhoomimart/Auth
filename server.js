@@ -14,6 +14,11 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 
+app.use((req, res) => {
+    console.log("❌ Route not found:", req.originalUrl);
+    res.status(404).json({ message: "Route not found" });
+});
+
 // MongoDB connect
 mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
     .then(() => console.log("MongoDB Connected"))
