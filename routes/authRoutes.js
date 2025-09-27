@@ -1,27 +1,42 @@
-const express = require("express");
-const { signup, login, forgotPassword, resetPassword } = require("../controllers/authController");
-
+const express = require('express');
 const router = express.Router();
+const authController = require('../controllers/authController');
+const { protect } = require('../middleware/authMiddleware');
 
-// signup
-router.post("/signup", signup);
+// ========== AUTH ROUTES ==========
 
-// login
-router.post("/login", login);
+// Signup
+router.post('/signup', authController.signup);
 
-// get all users
-router.get("/users", getUsers);
+// Login
+router.post('/login', authController.login);
 
-// update user
-router.put("/users/:id", updateUser);
+// Forgot password (send email with token)
+router.post('/forgot-password', authController.forgotPassword);
 
-// delete user
-router.delete("/users/:id", deleteUser);
+// Reset password (with token from email)
+router.patch('/reset-password/:token', authController.resetPassword);
 
-// forgot password
-router.post("/forgot-password", forgotPassword);
+// Change password (user must be logged in)
+router.patch('/change-password', protect, authController.changePassword);
 
-// reset password
-router.post("/reset-password", resetPassword);
+// ========== CRUD USER ROUTES ==========
+
+// Get all users (protected)
+router.get('/', protect, authController.getAllUsers);
+
+// Get user by ID
+router.get('/:id', protect, authController.getUser);
+
+// Update user (name, email, phone)
+router.put('/:id', protect, authController.updateUser);
+
+// Delete user
+router.delete('/:id', protect, authController.deleteUser);
 
 module.exports = router;
+
+const jwt = require('jsonwebtoken');
+const User = require('../models/userModel');
+const sendEmail = require('../utils/sendEmail');
+const crypto = require('crypto');

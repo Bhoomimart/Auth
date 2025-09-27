@@ -1,28 +1,32 @@
-const express = require("express");
-const dotenv = require("dotenv");
-const mongoose = require("mongoose");
+const express = require('express');
+const bodyParser = require('body-parser');
+const cookieParser = require('cookie-parser');
+const dotenv = require('dotenv');
+const connectDB = require('./config/db');
 
-const authRoutes = require("./routes/authRoutes");
-const userRoutes = require("./routes/userRoutes");
-
+// Load environment variables
 dotenv.config();
+
+// Connect MongoDB
+connectDB();
+
 const app = express();
 
-app.use(express.json());
+// Middleware
+app.use(bodyParser.json());
+app.use(cookieParser());
 
 // Routes
-app.use("/api/auth", authRoutes);
-app.use("/api/users", userRoutes);
+const authRoutes = require('./routes/authRoutes');
+app.use('/api/v1/auth', authRoutes);
 
-app.use((req, res) => {
-    console.log("❌ Route not found:", req.originalUrl);
-    res.status(404).json({ message: "Route not found" });
+// Root endpoint
+app.get('/', (req, res) => {
+    res.send('Auth API running...');
 });
 
-// MongoDB connect
-mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
-    .then(() => console.log("MongoDB Connected"))
-    .catch(err => console.log(err));
-
+// Server
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => {
+    console.log(`🚀 Server running on port ${PORT}`);
+});
